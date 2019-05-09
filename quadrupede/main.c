@@ -9,9 +9,12 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <math.h>
 
 void delay_us();
 void servo(char angl, char pin);
+char alpha(int x, int y);
+char beta(int x, int y);
 
 int main(void)
 {
@@ -28,36 +31,37 @@ int main(void)
 						  {{0, 7}, {-7, 7}, {-7, 7}, {0, 7}},
 						  {{0, 7}, {7, 7}, {7, 7}, {0, 7}},
 						  {{-7, 7}, {0, 7}, {0, 7}, {-7, 7}}};
+	char pin[4][2] = {{PINB0, PINB1}, {PINB2, PINB3}, {PINB4, PINB5}, {PINB6, PINB7}};
 	int speed;
-	char cmd;
+	char cmd = '1';
 	
     while (1) 
     {
-		UDR = 'L';
+		/*UDR = 'L';
 		while(!(UCSRA & (1<<TXC)));
 		UDR = 'O';
 		while(!(UCSRA & (1<<TXC)));
 		UDR = 'L';
 		while(!(UCSRA & (1<<TXC)));
 		_delay_ms(1000);
-		/*switch(UDR)
+		switch(UDR)
 		{
 		case '1' :
 			cmd = '1';
 			break;
-		}
+		}*/
 		if(cmd == '1'){
 			for(char i; i<sizeof(walk); i++){
 				for(char j; j<sizeof(walk[i]); j++){
-					servo(walk[i][j], j);
+					servo(alpha(walk[i][j][0], walk[i][j][1]), pin[j][0]);
+					servo(beta(walk[i][j][0], walk[i][j][1]), pin[j][1]);
 				}
-				_delay_ms(10);
+				delay_us(10000);
 			}
 			delay_us(speed);
-		}*/
+		}
     }
 }
-
 
 void servo(char angl, char pin){
 	int t = angl;
@@ -71,4 +75,12 @@ void delay_us(int n){
 	for(int i; i<n; i++){
 		_delay_us(1);
 	}
+}
+
+char alpha(int x, int y){
+	return -acos(x*sqrt(x*x+y*y)/x*x+y*y)*2*M_PI+asin(sqrt(x*x+y*y)/10)*2*M_PI+90;
+}
+
+char beta(int x, int y){
+	return -2*asin(sqrt(x*x+y*y)/10)*2*M_PI+180;
 }
