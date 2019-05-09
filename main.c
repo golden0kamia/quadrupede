@@ -1,16 +1,6 @@
-void main(){
-  char posBase[8] = {45, 90, 45, 90, 45, 90, 45, 90};
-  char walk[4,8] = {{135, 0, 45, 90, 45, 90, 135, 0},
-                    {45, 90, 45, 0, 45, 0, 45, 90},
-                    {45, 90, 135, 0, 135, 0, 45, 90},
-                    {45, 0, 45, 90, 45, 90, 45, 0}};
-  while(1){
-    for(char i; i<4; i++){
-      for(char j; i<8; j++){
-        servo(i, j);
-      }
-      _delay_ms(10);
-    }
-  }
-}
+#include <math.h>
 
+void main(){
+  int a = 2*acos(sqrt(x^2+y^2)/2/5);
+  int b = 180-acos(x/sqrt
+}
