@@ -19,37 +19,40 @@ char beta(int x, int y);
 int main(void)
 {
 	UCSRA = 0;
-	UCSRB = (1<<TXEN);
-	UCSRC = (1<<UCSZ1)|(1<<UCSZ0);
-	UBRRL = 0b00011001;
+	UCSRB = (1<<TXEN)|(1<<RXEN);
+	UCSRC = (3<<UCSZ0);
+	UBRRL = 0b00110000;//0b
 	UBRRH = 0;
 	DDRB = 255;
-	DDRD |= (1<<PIND1);
+	DDRD |= (1<<PD1);
 	
-	char posBase[1][4][2] = {{{0, 7}, {0, 7}, {0, 7}, {0, 7}}};
+	/*char posBase[1][4][2] = {{{0, 7}, {0, 7}, {0, 7}, {0, 7}}};
 	char walk[4][4][2] = {{{7, 7}, {0, 7}, {0, 7}, {7, 7}},
 						  {{0, 7}, {-7, 7}, {-7, 7}, {0, 7}},
 						  {{0, 7}, {7, 7}, {7, 7}, {0, 7}},
 						  {{-7, 7}, {0, 7}, {0, 7}, {-7, 7}}};
 	char pin[4][2] = {{PINB0, PINB1}, {PINB2, PINB3}, {PINB4, PINB5}, {PINB6, PINB7}};
 	int speed;
-	char cmd = '1';
+	char cmd = '1';*/
 	
     while (1) 
     {
-		/*UDR = 'L';
-		while(!(UCSRA & (1<<TXC)));
-		UDR = 'O';
-		while(!(UCSRA & (1<<TXC)));
-		UDR = 'L';
-		while(!(UCSRA & (1<<TXC)));
+		while(!(UCSRA & (1<<UDRE)));
+		UDR = 76;
+		while(!(UCSRA & (1<<UDRE)));
+		UDR = 79;
+		while(!(UCSRA & (1<<UDRE)));
+		UDR = 76;
+		while(!(UCSRA & (1<<UDRE)));
+		UDR = 10;
+		while(!(UCSRA & (1<<UDRE)));
 		_delay_ms(1000);
-		switch(UDR)
+		/*switch(UDR)
 		{
 		case '1' :
 			cmd = '1';
 			break;
-		}*/
+		}
 		if(cmd == '1'){
 			for(char i; i<sizeof(walk); i++){
 				for(char j; j<sizeof(walk[i]); j++){
@@ -59,7 +62,7 @@ int main(void)
 				delay_us(10000);
 			}
 			delay_us(speed);
-		}
+		}*/
     }
 }
 
@@ -78,9 +81,9 @@ void delay_us(int n){
 }
 
 char alpha(int x, int y){
-	return -acos(x*sqrt(x*x+y*y)/x*x+y*y)*2*M_PI+asin(sqrt(x*x+y*y)/10)*2*M_PI+90;
+	//return -acos(x*sqrt(x*x+y*y)/x*x+y*y)*2*M_PI+asin(sqrt(x*x+y*y)/10)*2*M_PI+90;
 }
 
 char beta(int x, int y){
-	return -2*asin(sqrt(x*x+y*y)/10)*2*M_PI+180;
+	//return -2*asin(sqrt(x*x+y*y)/10)*2*M_PI+180;
 }
