@@ -5,7 +5,12 @@
  * Author : Bastien Piguet
  */
 
-#define F_CPU 8000000UL
+#define F_CPU 1000000UL
+#define CLK PINC0
+#define CE PINC1
+#define DATA PINC2
+#define RESET PINC3
+#define RS PINC4
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -16,72 +21,53 @@ void servo(char angl, char pin);
 char alpha(int x, int y);
 char beta(int x, int y);
 void senduart(char txt);
+void writeLED(char led);
 
 int baud = 9600;
 char txt;
 
 int main(void)
 {
+	DDRC |= (1<<CLK)|(1<<CE)|(1<<DATA)|(1<<RESET)|(1<<RS);
+	PINC |= (1<<CE)|(1<<RESET);
+	DDRD |= (1<<PIND1)|(1<<PIND7);
+	UCSR0A = 1<<U2X0;
 	UCSR0B = (1<<TXEN0)|(1<<RXEN0);
 	UCSR0C = (3<<UCSZ00);
-	UBRR0L = F_CPU/(16*baud)+1;
-	DDRD |= (1<<PIND1);
+	UBRR0L = 12;
+	//DDRD |= (1<<PIND1);
 	
-	/*char posBase[1][4][2] = {{{0, 7}, {0, 7}, {0, 7}, {0, 7}}};
-	char walk[4][4][2] = {{{7, 7}, {0, 7}, {0, 7}, {7, 7}},
-						  {{0, 7}, {-7, 7}, {-7, 7}, {0, 7}},
-						  {{0, 7}, {7, 7}, {7, 7}, {0, 7}},
-						  {{-7, 7}, {0, 7}, {0, 7}, {-7, 7}}};
-	char pin[4][2] = {{PINB0, PINB1}, {PINB2, PINB3}, {PINB4, PINB5}, {PINB6, PINB7}};
-	int speed;*/
 	char cmd;
+	PINC |= 1<<RESET;
+	_delay_us(100);
+	PINC |= 1<<RESET;
 	
     while (1) 
     {
-		/*while(!(UCSR0A & (1<<UDRE0))){}
-		UDR0 = 'L';
-		while(!(UCSR0A & (1<<UDRE0))){}
-		UDR0 = 'O';
-		while(!(UCSR0A & (1<<UDRE0))){}
-		UDR0 = 'L';
-		while(!(UCSR0A & (1<<UDRE0))){}
-		UDR0 = '\n';
-		_delay_ms(1000);*/
-		if((UCSR0A & (1<<UDRE0))){
-			cmd = UDR0;
-		}
-		switch(cmd)
-		{
-		case '0' :
-			senduart('V');
-			break;
-		case '1' :
-			senduart('U');
-			break;
-		case '2' :
-			senduart('D');
-			break;
-		case '3' :
-			senduart('L');
-			break;
-		case '4' :
-			senduart('R');
-			break;
-		default:
-			break;
-		}
-		cmd = 0;
-		_delay_ms(1000);
-		/*if(cmd == '1'){
-			for(char i; i<sizeof(walk); i++){
-				for(char j; j<sizeof(walk[i]); j++){
-					servo(alpha(walk[i][j][0], walk[i][j][1]), pin[j][0]);
-					servo(beta(walk[i][j][0], walk[i][j][1]), pin[j][1]);
-				}
-				delay_us(10000);
+		if((UCSR0A & (1<<RXC0))){
+			switch(UDR0)
+			{
+			case '0' :
+				senduart('V');
+				break;
+			case '1' :
+				senduart('U');
+				break;
+			case '2' :
+				senduart('D');
+				break;
+			case '3' :
+				senduart('L');
+				break;
+			case '4' :
+				senduart('R');
+				break;
+			default:
+				senduart('#');
+				break;
 			}
-			delay_us(speed);
-		}*/
+		}
+		writeLED(0b01111110);
     }
 }
 
@@ -110,4 +96,24 @@ char beta(int x, int y){
 void senduart(char txt){
 	while(!(UCSR0A & (1<<UDRE0))){}
 	UDR0 = txt;
+}
+
+void writeLED(char led){
+	PINC |= 1<<CE;
+	for(int i; i<8; i++){
+		if(led & (1<<i)){
+			PINC |= 1<<DATA;
+		}
+		_delay_us(100);
+		PINC |= 1<<CLK;
+		_delay_us(100);
+		if(led & (1<<i)){
+			PINC |= 1<<DATA;
+		}
+		_delay_us(100);
+		PINC |= 1<<CLK;
+		_delay_us(100);
+	}
+	PINC |= 1<<CE;
+	_delay_us(1);
 }
